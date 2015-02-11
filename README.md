@@ -1,4 +1,4 @@
-## Nginx Dockerfile
+## HHVM Dockerfile
 
 
 This repository contains **Dockerfile** of [HHVM](http://hhvm.com/) for [Docker](https://www.docker.com/)'s [automated build](https://registry.hub.docker.com/u/alexisvincent/nginx.hhvm/) published to the public [Docker Hub Registry](https://registry.hub.docker.com/).
