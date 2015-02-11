@@ -4,34 +4,27 @@
 # https://github.com/alexisvincent/docker-nginx.hhvm
 #
 
-FROM alexisvincent/nginx:latest
+FROM alexisvincent/nginx:1.7.9
 
 MAINTAINER Alexis Vincent "alexisjohnvincent@gmail.com"
 
-ENV HHVM_VERSION 3.4.0~trusty
-
-RUN wget -O - http://dl.hhvm.com/conf/hhvm.gpg.key | sudo apt-key add - && \
-	echo deb http://dl.hhvm.com/ubuntu trusty main | sudo tee /etc/apt/sources.list.d/hhvm.list
+ENV HHVM_VERSION 3.5.0~wheezy
 
 # Install supervisor & hhvm; cleanup afterwards
 RUN \
-	wget -O - http://dl.hhvm.com/conf/hhvm.gpg.key | sudo apt-key add - && \
-	echo deb http://dl.hhvm.com/ubuntu trusty main | sudo tee /etc/apt/sources.list.d/hhvm.list && \
-	sudo apt-get update && \
-	sudo apt-get -y install supervisor hhvm=${HHVM_VERSION} && \
-	sudo apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+	apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0x5a16e7281be7a449 && \
+	echo deb http://dl.hhvm.com/debian wheezy main | tee /etc/apt/sources.list.d/hhvm.list && \
+	apt-get update && \
+	apt-get -y install hhvm=${HHVM_VERSION} supervisor && \
+	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Add configs
-ADD build/hhvm.conf /etc/nginx/
-ADD build/nginx.conf /etc/nginx/
-ADD build/default-site /etc/nginx/sites-enabled/default
-ADD build/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-# Auto configure hhvm
-RUN /usr/share/hhvm/install_fastcgi.sh
+COPY container/php_restrictions.conf /etc/nginx/global/php_restrictions.conf
+COPY container/static_asset_caching.conf /etc/nginx/global/static_asset_caching.conf
+COPY container/default.conf /etc/nginx/conf.d/default.conf
+COPY container/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY container/index.php /data/www/index.php
 
 # Container Config
-VOLUME ["/etc/nginx/sites-enabled", "/etc/nginx/certs", "/etc/nginx/conf.d", "/var/log/nginx"]
 CMD ["/usr/bin/supervisord"]
-EXPOSE 80
-EXPOSE 443
+EXPOSE 80 443
